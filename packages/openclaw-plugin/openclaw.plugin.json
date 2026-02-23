@@ -37,10 +37,7 @@
     "apiToken": "MONDAY_API_TOKEN"
   },
   "skills": [
-    "skills/monday-basics/SKILL.md",
-    "skills/monday-items/SKILL.md",
-    "skills/monday-workflows/SKILL.md",
-    "skills/monday-api/SKILL.md"
+    "skills/monday-com/SKILL.md"
   ],
   "tools": [
     "monday_list_boards",
@@ -68,7 +65,15 @@
     "monday_list_users_and_teams",
     "monday_search",
     "monday_raw_graphql",
-    "monday_get_schema"
+    "monday_get_schema",
+    "monday_get_subitems",
+    "monday_create_subitem",
+    "monday_update_subitem_columns",
+    "monday_list_webhooks",
+    "monday_create_webhook",
+    "monday_get_activity_log",
+    "monday_add_file_to_column",
+    "monday_get_account_info"
   ],
   "categories": ["productivity", "project-management", "work-management"],
   "keywords": ["monday.com", "project-management", "work-os", "boards", "items"]

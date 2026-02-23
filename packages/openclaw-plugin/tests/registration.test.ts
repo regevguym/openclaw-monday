@@ -1,5 +1,5 @@
 /**
- * Verify all 26 tools register correctly with the OpenClaw plugin API.
+ * Verify all 34 tools register correctly with the OpenClaw plugin API.
  */
 
 import { describe, it, beforeEach, mock } from "node:test";
@@ -26,9 +26,9 @@ describe("Tool Registration", () => {
     };
   });
 
-  it("should register all 26 tools", () => {
+  it("should register all 34 tools", () => {
     register(mockApi);
-    assert.equal(registeredTools.size, 26, `Expected 26 tools, got ${registeredTools.size}`);
+    assert.equal(registeredTools.size, 34, `Expected 34 tools, got ${registeredTools.size}`);
   });
 
   it("should throw if no API token provided", () => {
@@ -73,6 +73,19 @@ describe("Tool Registration", () => {
     // Advanced (2)
     "monday_raw_graphql",
     "monday_get_schema",
+    // Subitems (3)
+    "monday_get_subitems",
+    "monday_create_subitem",
+    "monday_update_subitem_columns",
+    // Automations (2)
+    "monday_list_webhooks",
+    "monday_create_webhook",
+    // Activity (1)
+    "monday_get_activity_log",
+    // Files (1)
+    "monday_add_file_to_column",
+    // Account (1)
+    "monday_get_account_info",
   ];
 
   it("should register each expected tool by name", () => {

@@ -1,7 +1,7 @@
 /**
  * OpenClaw Plugin for monday.com
  *
- * Entry point that registers all 26 tools with the OpenClaw plugin API.
+ * Entry point that registers all 34 tools with the OpenClaw plugin API.
  * Provides comprehensive monday.com management capabilities for AI agents.
  */
 
@@ -19,6 +19,11 @@ import * as workspaces from "./tools/workspaces.js";
 import * as users from "./tools/users.js";
 import * as searchModule from "./tools/search.js";
 import * as advanced from "./tools/advanced.js";
+import * as subitems from "./tools/subitems.js";
+import * as automations from "./tools/automations.js";
+import * as activity from "./tools/activity.js";
+import * as files from "./tools/files.js";
+import * as account from "./tools/account.js";
 
 export interface PluginConfig {
   /** monday.com API token */
@@ -262,6 +267,72 @@ export function register(api: any) {
       "Inspect the monday.com GraphQL schema. Optionally specify a type name to get its fields and details.",
     parameters: advanced.GetSchemaParams,
     execute: async (params: any) => advanced.getSchema(client, mcpClient, params),
+  });
+
+  // --- Subitem Tools ---
+
+  api.registerTool({
+    name: "monday_get_subitems",
+    description: "Get all subitems for a parent item, including their column values.",
+    parameters: subitems.GetSubitemsParams,
+    execute: async (params: any) => subitems.getSubitems(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_create_subitem",
+    description: "Create a subitem under a parent item. Subitems have their own independent column schema.",
+    parameters: subitems.CreateSubitemParams,
+    execute: async (params: any) => subitems.createSubitem(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_update_subitem_columns",
+    description: "Update column values on a subitem. Requires the subitems board ID (not the parent board).",
+    parameters: subitems.UpdateSubitemColumnsParams,
+    execute: async (params: any) => subitems.updateSubitemColumns(client, params),
+  });
+
+  // --- Automation / Webhook Tools ---
+
+  api.registerTool({
+    name: "monday_list_webhooks",
+    description: "List all webhooks configured on a board.",
+    parameters: automations.ListWebhooksParams,
+    execute: async (params: any) => automations.listWebhooks(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_create_webhook",
+    description: "Create a webhook on a board to receive real-time event notifications via HTTP POST.",
+    parameters: automations.CreateWebhookParams,
+    execute: async (params: any) => automations.createWebhook(client, params),
+  });
+
+  // --- Activity Log Tools ---
+
+  api.registerTool({
+    name: "monday_get_activity_log",
+    description: "Get the activity log for a board. Shows changes, creations, and updates with optional filters.",
+    parameters: activity.GetActivityLogParams,
+    execute: async (params: any) => activity.getActivityLog(client, params),
+  });
+
+  // --- File Tools ---
+
+  api.registerTool({
+    name: "monday_add_file_to_column",
+    description: "Add a file to a file column on an item by providing a public URL.",
+    parameters: files.AddFileToColumnParams,
+    execute: async (params: any) => files.addFileToColumn(client, params),
+  });
+
+  // --- Account Tools ---
+
+  api.registerTool({
+    name: "monday_get_account_info",
+    description: "Get current user profile and account details including plan tier, teams, and admin status.",
+    parameters: account.GetAccountInfoParams,
+    execute: async (params: any) => account.getAccountInfo(client, params),
   });
 }
 
