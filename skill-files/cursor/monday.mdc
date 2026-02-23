@@ -1,0 +1,78 @@
+---
+description: monday.com agent knowledge - entity model, API patterns, column value formats
+globs: ["**/*monday*", "**/*board*"]
+alwaysApply: false
+---
+
+# monday.com Knowledge for Cursor
+
+## Entity Model
+
+monday.com hierarchy: Account → Workspaces → Boards → Groups → Items
+
+- **Board** = table (columns define schema, items are rows)
+- **Groups** = row sections (stages like To Do / In Progress / Done)
+- **Items** = records (name + column values)
+- **Updates** = comments on items
+
+## API
+
+- Endpoint: `POST https://api.monday.com/v2` (GraphQL)
+- Auth: `Authorization: <TOKEN>` header
+- Version: `API-Version: 2024-10`
+- Rate limit: 5M complexity points/min
+- Pagination: cursor-based (`items_page` → `next_items_page`)
+
+## Column Value JSON Formats
+
+When setting column values via `column_values` parameter:
+
+```
+Status:     { "label": "Done" }  or  { "index": 1 }
+Text:       "plain string"
+Numbers:    42
+Date:       { "date": "2024-01-15" }
+Date+Time:  { "date": "2024-01-15", "time": "09:00:00" }
+Timeline:   { "from": "2024-01-01", "to": "2024-01-31" }
+People:     { "personsAndTeams": [{ "id": 123, "kind": "person" }] }
+Dropdown:   { "labels": ["Option 1", "Option 2"] }
+Checkbox:   { "checked": "true" }
+Email:      { "email": "a@b.com", "text": "display text" }
+Phone:      { "phone": "+1234567890", "countryShortName": "US" }
+Link:       { "url": "https://...", "text": "display text" }
+Long Text:  { "text": "long content here" }
+Rating:     { "rating": 4 }
+Location:   { "lat": 40.7, "lng": -74.0, "address": "NYC" }
+Country:    { "countryCode": "US", "countryName": "United States" }
+Tags:       { "tag_ids": [123, 456] }
+```
+
+Use `create_labels_if_missing: true` for new status/dropdown labels.
+
+## Key Queries
+
+```graphql
+# List boards
+query { boards(limit: 25) { id name columns { id title type } groups { id title } items_count } }
+
+# Get items with pagination
+query ($id: [ID!]!) { boards(ids: $id) { items_page(limit: 50) { cursor items { id name column_values { id type text value } } } } }
+
+# Create item
+mutation ($bid: ID!, $name: String!, $cv: JSON!) { create_item(board_id: $bid, item_name: $name, column_values: $cv) { id } }
+
+# Update columns
+mutation ($bid: ID!, $iid: ID!, $cv: JSON!) { change_multiple_column_values(board_id: $bid, item_id: $iid, column_values: $cv) { id } }
+```
+
+## Best Practices
+
+1. Get board structure before modifying items
+2. Always use GraphQL variables (never string interpolation)
+3. Batch column updates with `change_multiple_column_values`
+4. Paginate large item lists with cursor
+5. Request only needed fields (reduces complexity cost)
+
+## MCP Server
+
+Available at `https://mcp.monday.com/mcp` - auth with Bearer token.

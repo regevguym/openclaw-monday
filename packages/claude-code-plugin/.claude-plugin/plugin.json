@@ -1,0 +1,21 @@
+{
+  "name": "monday-com",
+  "displayName": "monday.com Agent",
+  "version": "0.1.0",
+  "description": "Comprehensive monday.com knowledge and MCP integration for Claude Code. Provides skills for working with boards, items, columns, and the monday.com API.",
+  "skills": [
+    "../skills/monday-com/SKILL.md"
+  ],
+  "commands": [
+    "../commands/monday-help.md",
+    "../commands/monday-create-board.md"
+  ],
+  "mcpServers": {
+    "monday": {
+      "url": "https://mcp.monday.com/mcp",
+      "env": {
+        "MONDAY_API_TOKEN": "{{MONDAY_API_TOKEN}}"
+      }
+    }
+  }
+}

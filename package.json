@@ -1,0 +1,19 @@
+{
+  "name": "openclaw-monday",
+  "version": "1.0.0",
+  "private": true,
+  "description": "monday.com AI agent platform - OpenClaw plugin + Claude Code plugin + agnostic skill files",
+  "workspaces": [
+    "packages/openclaw-plugin",
+    "packages/claude-code-plugin"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm test --workspaces",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0"
+  }
+}

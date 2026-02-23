@@ -1,0 +1,7 @@
+{
+  "name": "@mondaydotcomorg/claude-code-monday",
+  "version": "0.1.0",
+  "description": "Claude Code plugin for monday.com - skills, commands, and MCP config",
+  "keywords": ["monday.com", "claude-code", "ai-agent", "mcp"],
+  "license": "MIT"
+}

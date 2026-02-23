@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "monday": {
+      "type": "streamable-http",
+      "url": "https://mcp.monday.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${MONDAY_API_TOKEN}"
+      }
+    }
+  }
+}

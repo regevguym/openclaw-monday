@@ -1,0 +1,75 @@
+{
+  "$schema": "https://openclaw.ai/schemas/plugin/v1.json",
+  "name": "monday-com",
+  "displayName": "monday.com",
+  "version": "0.1.0",
+  "description": "Full monday.com management - boards, items, columns, docs, users, and more. Makes AI agents a monday.com power user.",
+  "author": "monday.com",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "icon": "https://monday.com/favicon.ico",
+  "repository": "https://github.com/mondaycom/openclaw-monday",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "apiToken": {
+        "type": "string",
+        "description": "monday.com API token. Get yours at: https://monday.com → Avatar → Developers → My Access Tokens",
+        "secret": true
+      },
+      "workspaceId": {
+        "type": "number",
+        "description": "Optional default workspace ID to scope operations to"
+      },
+      "mcpServerUrl": {
+        "type": "string",
+        "description": "MCP server URL override (default: https://mcp.monday.com/mcp)"
+      },
+      "enableMcp": {
+        "type": "boolean",
+        "description": "Enable MCP passthrough for advanced tools (default: true)",
+        "default": true
+      }
+    },
+    "required": ["apiToken"]
+  },
+  "envMapping": {
+    "apiToken": "MONDAY_API_TOKEN"
+  },
+  "skills": [
+    "skills/monday-basics/SKILL.md",
+    "skills/monday-items/SKILL.md",
+    "skills/monday-workflows/SKILL.md",
+    "skills/monday-api/SKILL.md"
+  ],
+  "tools": [
+    "monday_list_boards",
+    "monday_get_board",
+    "monday_create_board",
+    "monday_delete_board",
+    "monday_get_items",
+    "monday_create_item",
+    "monday_update_item_columns",
+    "monday_move_item",
+    "monday_delete_item",
+    "monday_create_column",
+    "monday_get_column_values",
+    "monday_list_groups",
+    "monday_create_group",
+    "monday_move_item_to_group",
+    "monday_create_update",
+    "monday_get_updates",
+    "monday_reply_to_update",
+    "monday_list_docs",
+    "monday_create_doc",
+    "monday_read_doc",
+    "monday_list_workspaces",
+    "monday_create_workspace",
+    "monday_list_users_and_teams",
+    "monday_search",
+    "monday_raw_graphql",
+    "monday_get_schema"
+  ],
+  "categories": ["productivity", "project-management", "work-management"],
+  "keywords": ["monday.com", "project-management", "work-os", "boards", "items"]
+}

@@ -1,0 +1,272 @@
+/**
+ * OpenClaw Plugin for monday.com
+ *
+ * Entry point that registers all 26 tools with the OpenClaw plugin API.
+ * Provides comprehensive monday.com management capabilities for AI agents.
+ */
+
+import { MondayClient } from "./monday-client.js";
+import { McpClient } from "./mcp-client.js";
+
+// Tool modules
+import * as boards from "./tools/boards.js";
+import * as items from "./tools/items.js";
+import * as columns from "./tools/columns.js";
+import * as groups from "./tools/groups.js";
+import * as updates from "./tools/updates.js";
+import * as docs from "./tools/docs.js";
+import * as workspaces from "./tools/workspaces.js";
+import * as users from "./tools/users.js";
+import * as searchModule from "./tools/search.js";
+import * as advanced from "./tools/advanced.js";
+
+export interface PluginConfig {
+  /** monday.com API token */
+  apiToken: string;
+  /** Optional workspace ID to scope operations */
+  workspaceId?: number;
+  /** Optional MCP server URL override */
+  mcpServerUrl?: string;
+  /** Enable MCP passthrough for advanced tools (default: true) */
+  enableMcp?: boolean;
+}
+
+/**
+ * Register all monday.com tools with the OpenClaw plugin API.
+ */
+export function register(api: any) {
+  const config: PluginConfig = {
+    apiToken: api.config.get("apiToken") ?? api.config.get("MONDAY_API_TOKEN"),
+    workspaceId: api.config.get("workspaceId"),
+    mcpServerUrl: api.config.get("mcpServerUrl"),
+    enableMcp: api.config.get("enableMcp") !== false,
+  };
+
+  if (!config.apiToken) {
+    throw new Error(
+      "monday.com API token is required. Set 'apiToken' in plugin config or MONDAY_API_TOKEN environment variable."
+    );
+  }
+
+  const client = new MondayClient({
+    apiToken: config.apiToken,
+  });
+
+  let mcpClient: McpClient | null = null;
+  if (config.enableMcp) {
+    mcpClient = new McpClient({
+      apiToken: config.apiToken,
+      serverUrl: config.mcpServerUrl,
+    });
+  }
+
+  // --- Board Tools ---
+
+  api.registerTool({
+    name: "monday_list_boards",
+    description: "List boards in your monday.com account. Optionally filter by workspace or board kind.",
+    parameters: boards.ListBoardsParams,
+    execute: async (params: any) => boards.listBoards(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_get_board",
+    description: "Get detailed information about a specific board including columns, groups, and settings.",
+    parameters: boards.GetBoardParams,
+    execute: async (params: any) => boards.getBoard(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_create_board",
+    description: "Create a new board in monday.com. Can create from scratch or from a template.",
+    parameters: boards.CreateBoardParams,
+    execute: async (params: any) => boards.createBoard(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_delete_board",
+    description: "Permanently delete a board. This action cannot be undone.",
+    parameters: boards.DeleteBoardParams,
+    execute: async (params: any) => boards.deleteBoard(client, params),
+  });
+
+  // --- Item Tools ---
+
+  api.registerTool({
+    name: "monday_get_items",
+    description: "Get items from a board with optional filtering by group, column value, or pagination cursor.",
+    parameters: items.GetItemsParams,
+    execute: async (params: any) => items.getItems(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_create_item",
+    description: "Create a new item (row) on a board. Optionally set column values and target group.",
+    parameters: items.CreateItemParams,
+    execute: async (params: any) => items.createItem(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_update_item_columns",
+    description: "Update column values for an existing item. Pass column_values as { column_id: value }.",
+    parameters: items.UpdateItemColumnsParams,
+    execute: async (params: any) => items.updateItemColumns(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_move_item",
+    description: "Move an item to a different group on the same board.",
+    parameters: items.MoveItemParams,
+    execute: async (params: any) => items.moveItem(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_delete_item",
+    description: "Permanently delete an item. This action cannot be undone.",
+    parameters: items.DeleteItemParams,
+    execute: async (params: any) => items.deleteItem(client, params),
+  });
+
+  // --- Column Tools ---
+
+  api.registerTool({
+    name: "monday_create_column",
+    description: "Add a new column to a board with a specified type and optional defaults.",
+    parameters: columns.CreateColumnParams,
+    execute: async (params: any) => columns.createColumn(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_get_column_values",
+    description: "Get all column values for a specific item, including settings for each column.",
+    parameters: columns.GetColumnValuesParams,
+    execute: async (params: any) => columns.getColumnValues(client, params),
+  });
+
+  // --- Group Tools ---
+
+  api.registerTool({
+    name: "monday_list_groups",
+    description: "List all groups on a board with their IDs, titles, colors, and positions.",
+    parameters: groups.ListGroupsParams,
+    execute: async (params: any) => groups.listGroups(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_create_group",
+    description: "Create a new group on a board. Optionally position it at the top.",
+    parameters: groups.CreateGroupParams,
+    execute: async (params: any) => groups.createGroup(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_move_item_to_group",
+    description: "Move an item to a different group on the same board.",
+    parameters: groups.MoveItemToGroupParams,
+    execute: async (params: any) => groups.moveItemToGroup(client, params),
+  });
+
+  // --- Update Tools ---
+
+  api.registerTool({
+    name: "monday_create_update",
+    description: "Post a comment/update on an item. Supports HTML formatting.",
+    parameters: updates.CreateUpdateParams,
+    execute: async (params: any) => updates.createUpdate(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_get_updates",
+    description: "Get updates (comments) on an item, including replies.",
+    parameters: updates.GetUpdatesParams,
+    execute: async (params: any) => updates.getUpdates(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_reply_to_update",
+    description: "Reply to an existing update/comment on an item.",
+    parameters: updates.ReplyToUpdateParams,
+    execute: async (params: any) => updates.replyToUpdate(client, params),
+  });
+
+  // --- Document Tools ---
+
+  api.registerTool({
+    name: "monday_list_docs",
+    description: "List documents in monday.com. Optionally filter by workspace.",
+    parameters: docs.ListDocsParams,
+    execute: async (params: any) => docs.listDocs(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_create_doc",
+    description: "Create a new document in a workspace with markdown content.",
+    parameters: docs.CreateDocParams,
+    execute: async (params: any) => docs.createDoc(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_read_doc",
+    description: "Read a document's content including all blocks.",
+    parameters: docs.ReadDocParams,
+    execute: async (params: any) => docs.readDoc(client, params),
+  });
+
+  // --- Workspace Tools ---
+
+  api.registerTool({
+    name: "monday_list_workspaces",
+    description: "List workspaces in your monday.com account.",
+    parameters: workspaces.ListWorkspacesParams,
+    execute: async (params: any) => workspaces.listWorkspaces(client, params),
+  });
+
+  api.registerTool({
+    name: "monday_create_workspace",
+    description: "Create a new workspace. Can be open (visible to all) or closed (invite-only).",
+    parameters: workspaces.CreateWorkspaceParams,
+    execute: async (params: any) => workspaces.createWorkspace(client, params),
+  });
+
+  // --- User Tools ---
+
+  api.registerTool({
+    name: "monday_list_users_and_teams",
+    description: "List users and teams in your monday.com account. Filter by user kind.",
+    parameters: users.ListUsersAndTeamsParams,
+    execute: async (params: any) => users.listUsersAndTeams(client, params),
+  });
+
+  // --- Search Tools ---
+
+  api.registerTool({
+    name: "monday_search",
+    description: "Search for boards and items across monday.com. Optionally scope to specific boards.",
+    parameters: searchModule.SearchParams,
+    execute: async (params: any) => searchModule.search(client, params),
+  });
+
+  // --- Advanced Tools ---
+
+  api.registerTool({
+    name: "monday_raw_graphql",
+    description:
+      "Execute a raw GraphQL query or mutation against the monday.com API. Use for operations not covered by other tools.",
+    parameters: advanced.RawGraphqlParams,
+    execute: async (params: any) => advanced.rawGraphql(client, mcpClient, params),
+  });
+
+  api.registerTool({
+    name: "monday_get_schema",
+    description:
+      "Inspect the monday.com GraphQL schema. Optionally specify a type name to get its fields and details.",
+    parameters: advanced.GetSchemaParams,
+    execute: async (params: any) => advanced.getSchema(client, mcpClient, params),
+  });
+}
+
+// Re-export for direct use
+export { MondayClient } from "./monday-client.js";
+export { McpClient } from "./mcp-client.js";
+export * from "./utils/column-values.js";
+export * from "./utils/pagination.js";

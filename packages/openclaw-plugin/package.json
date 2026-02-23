@@ -1,0 +1,24 @@
+{
+  "name": "@mondaydotcomorg/openclaw-monday",
+  "version": "0.1.0",
+  "description": "OpenClaw plugin for monday.com - AI agent tools and skills",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc --project tsconfig.test.json && node --test dist-tests/tests/*.test.js",
+    "smoke-test": "tsx tests/smoke-test.ts"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.32.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0",
+    "vitest": "^1.6.0",
+    "tsx": "^4.7.0"
+  },
+  "keywords": ["monday.com", "openclaw", "ai-agent", "graphql"],
+  "license": "MIT"
+}
