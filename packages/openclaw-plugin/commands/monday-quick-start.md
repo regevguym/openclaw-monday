@@ -27,6 +27,8 @@ icon: ⚡
 
 Welcome! I'm your monday.com AI assistant. Let me help you choose the perfect setup for your team and goals.
 
+> **🔑 First time?** If you haven't set up your API token yet, run `/monday-setup-token` for step-by-step guidance!
+
 ## 🎯 What Do You Want To Accomplish?
 
 Tell me what you're trying to do and I'll recommend the best approach:

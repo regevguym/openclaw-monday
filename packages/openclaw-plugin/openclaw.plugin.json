@@ -40,6 +40,7 @@
     "skills/monday-com/SKILL.md"
   ],
   "commands": [
+    "commands/monday-setup-token.md",
     "commands/monday-create-board.md",
     "commands/monday-setup-project.md",
     "commands/monday-setup-sprint.md",

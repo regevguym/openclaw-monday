@@ -41,15 +41,35 @@ export interface PluginConfig {
  */
 export function register(api: any) {
   const config: PluginConfig = {
-    apiToken: api.config.get("apiToken") ?? api.config.get("MONDAY_API_TOKEN"),
+    apiToken: api.config.get("apiToken") ?? api.config.get("MONDAY_API_TOKEN") ?? process.env.MONDAY_API_TOKEN,
     workspaceId: api.config.get("workspaceId"),
     mcpServerUrl: api.config.get("mcpServerUrl"),
     enableMcp: api.config.get("enableMcp") !== false,
   };
 
   if (!config.apiToken) {
+    console.log(`
+🦙 WELCOME TO MONDAY.COM OPENCLAW PLUGIN! 🦙
+
+I'm ready to supercharge your monday.com workflow, but I need your API token first!
+
+🔑 **Quick Setup Required:**
+   Run: /monday-setup-token
+
+🎯 **What you'll get:**
+   • 34 powerful monday.com tools
+   • Interactive board creation wizards
+   • AI session logging
+   • WhatsApp contact sync
+   • And much more!
+
+⏱️ **Setup time:** Just 2-3 minutes
+
+Let's get you set up! 🚀
+`);
+
     throw new Error(
-      "monday.com API token is required. Set 'apiToken' in plugin config or MONDAY_API_TOKEN environment variable."
+      "🔑 API token setup required. Run: /monday-setup-token for step-by-step guidance."
     );
   }
 
