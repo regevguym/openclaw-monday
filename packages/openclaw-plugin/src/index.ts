@@ -87,21 +87,31 @@ Once set, restart the gateway and all 34 monday.com tools will be ready! 🚀`;
     return "";
   }
 
+  /** Format a result as a tool response */
+  function toolResult(data: any) {
+    if (typeof data === "string") {
+      return { content: [{ type: "text", text: data }] };
+    }
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  }
+
   /** Wrap a tool executor to check for token first */
   function guarded(fn: (client: MondayClient, params: any) => Promise<any>) {
-    return async (params: any) => {
+    return async (_id: string, params: any) => {
       const msg = requireToken();
-      if (msg) return msg;
-      return fn(client!, params);
+      if (msg) return toolResult(msg);
+      const result = await fn(client!, params);
+      return toolResult(result);
     };
   }
 
   function guardedMcp(fn: (client: McpClient, params: any) => Promise<any>) {
-    return async (params: any) => {
+    return async (_id: string, params: any) => {
       const msg = requireToken();
-      if (msg) return msg;
-      if (!mcpClient) return "MCP client not configured.";
-      return fn(mcpClient, params);
+      if (msg) return toolResult(msg);
+      if (!mcpClient) return toolResult("MCP client not configured.");
+      const result = await fn(mcpClient, params);
+      return toolResult(result);
     };
   }
 
