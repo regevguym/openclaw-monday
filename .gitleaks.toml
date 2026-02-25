@@ -1,0 +1,22 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist"
+paths = [
+    '''node_modules''',
+    '''dist''',
+    '''\.lock$''',
+]
+
+[[rules]]
+id = "monday-api-token"
+description = "monday.com API Token"
+regex = '''eyJhbGciOi[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+'''
+tags = ["monday", "api", "token"]
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(?:api[_-]?key|apikey)\s*[:=]\s*['\"][A-Za-z0-9\-_]{20,}['\"]'''
+tags = ["api", "key"]

@@ -100,7 +100,7 @@ api.registerHook({
 
 ### Git Status
 ✅ Changes committed to main branch
-✅ Pushed to remote: git@github.com:regevguym/openclaw-monday.git
+✅ Pushed to remote: git@github.com:mondaycom/openclaw-monday.git
 
 **Commit**: `f1429ba` - "Wire up slash commands and onboarding hook"
 
