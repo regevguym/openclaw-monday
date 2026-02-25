@@ -37,6 +37,21 @@ export interface PluginConfig {
 }
 
 /**
+ * Load a command markdown file and return its content
+ */
+function loadCommandContent(commandName: string): string {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const __dirname = path.dirname(new URL(import.meta.url).pathname);
+    const commandPath = path.join(__dirname, '..', 'commands', `${commandName}.md`);
+    return fs.readFileSync(commandPath, 'utf-8');
+  } catch (err) {
+    return `Error loading command content: ${err}`;
+  }
+}
+
+/**
  * Register all monday.com tools with the OpenClaw plugin API.
  */
 export function register(api: any) {
@@ -384,6 +399,147 @@ Once set, restart the gateway and all 34 monday.com tools will be ready! 🚀`;
     parameters: account.GetAccountInfoParams,
     execute: guarded(account.getAccountInfo),
   });
+
+  // --- Slash Commands ---
+  // Register all 8 slash commands from markdown files
+
+  api.registerCommand({
+    name: "monday-setup-token",
+    description: "Step-by-step guide to get and configure your monday.com API token",
+    acceptsArgs: false,
+    requireAuth: false, // This command works WITHOUT a token (that's the point!)
+    handler: (ctx: any) => {
+      return { text: loadCommandContent("monday-setup-token") };
+    },
+  });
+
+  api.registerCommand({
+    name: "monday-quick-start",
+    description: "Interactive guide to help choose and set up the right monday.com workflow for your needs",
+    acceptsArgs: false,
+    requireAuth: false,
+    handler: (ctx: any) => {
+      if (tokenMissing) {
+        return { text: TOKEN_SETUP_MSG };
+      }
+      return { text: loadCommandContent("monday-quick-start") };
+    },
+  });
+
+  api.registerCommand({
+    name: "monday-create-board",
+    description: "Interactive board creation wizard with templates and smart defaults",
+    acceptsArgs: false,
+    requireAuth: false,
+    handler: (ctx: any) => {
+      if (tokenMissing) {
+        return { text: TOKEN_SETUP_MSG };
+      }
+      return { text: loadCommandContent("monday-create-board") };
+    },
+  });
+
+  api.registerCommand({
+    name: "monday-setup-crm",
+    description: "Complete CRM and sales pipeline setup with lead tracking, deal management, and sales analytics",
+    acceptsArgs: false,
+    requireAuth: false,
+    handler: (ctx: any) => {
+      if (tokenMissing) {
+        return { text: TOKEN_SETUP_MSG };
+      }
+      return { text: loadCommandContent("monday-setup-crm") };
+    },
+  });
+
+  api.registerCommand({
+    name: "monday-setup-project",
+    description: "Complete project setup with multiple boards, team assignment, and automation",
+    acceptsArgs: false,
+    requireAuth: false,
+    handler: (ctx: any) => {
+      if (tokenMissing) {
+        return { text: TOKEN_SETUP_MSG };
+      }
+      return { text: loadCommandContent("monday-setup-project") };
+    },
+  });
+
+  api.registerCommand({
+    name: "monday-setup-sprint",
+    description: "Agile sprint board creation with story points, velocity tracking, and scrum ceremonies",
+    acceptsArgs: false,
+    requireAuth: false,
+    handler: (ctx: any) => {
+      if (tokenMissing) {
+        return { text: TOKEN_SETUP_MSG };
+      }
+      return { text: loadCommandContent("monday-setup-sprint") };
+    },
+  });
+
+  api.registerCommand({
+    name: "monday-session-settings",
+    description: "Configure AI session logging preferences and analytics board settings",
+    acceptsArgs: false,
+    requireAuth: false,
+    handler: (ctx: any) => {
+      if (tokenMissing) {
+        return { text: TOKEN_SETUP_MSG };
+      }
+      return { text: loadCommandContent("monday-session-settings") };
+    },
+  });
+
+  api.registerCommand({
+    name: "monday-whatsapp-sync",
+    description: "Manage WhatsApp allowlist with 2-way sync between OpenClaw config and monday.com boards",
+    acceptsArgs: false,
+    requireAuth: false,
+    handler: (ctx: any) => {
+      if (tokenMissing) {
+        return { text: TOKEN_SETUP_MSG };
+      }
+      return { text: loadCommandContent("monday-whatsapp-sync") };
+    },
+  });
+
+  // --- Hooks ---
+  // Register onInstall hook for first-time setup experience
+
+  if (api.registerHook) {
+    api.registerHook({
+      name: "onInstall",
+      handler: () => {
+        if (tokenMissing) {
+          console.log(`
+🦙 Welcome to monday.com OpenClaw Plugin! 🦙
+
+To get started, you'll need to configure your monday.com API token.
+
+Run this command for step-by-step setup instructions:
+  /monday-setup-token
+
+Or check the quick start guide:
+  /monday-quick-start
+`);
+        } else {
+          console.log(`
+🦙 monday.com OpenClaw Plugin loaded successfully! 🦙
+
+All 34 tools are ready to use.
+
+Try these commands to get started:
+  /monday-quick-start    - Choose the right workflow for you
+  /monday-create-board   - Create a new board with templates
+  /monday-setup-project  - Set up a complete project workspace
+
+Happy building! 🚀
+`);
+        }
+      },
+    });
+  }
 }
 
 // Re-export for direct use
