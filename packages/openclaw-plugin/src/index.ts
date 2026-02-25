@@ -496,11 +496,93 @@ Once set, restart the gateway and all 34 monday.com tools will be ready! 🚀`;
     description: "Manage WhatsApp allowlist with 2-way sync between OpenClaw config and monday.com boards",
     acceptsArgs: false,
     requireAuth: false,
-    handler: (ctx: any) => {
+    handler: async (ctx: any) => {
       if (tokenMissing) {
         return { text: TOKEN_SETUP_MSG };
       }
-      return { text: loadCommandContent("monday-whatsapp-sync") };
+      
+      // Import and use the actual WhatsAppAllowlistSync functionality
+      const { WhatsAppAllowlistSync } = await import("./integrations/whatsapp-sync.js");
+      const whatsappSync = new WhatsAppAllowlistSync(client!);
+      
+      try {
+        // Create the allowlist board
+        const board = await whatsappSync.ensureAllowlistBoard();
+        
+        // Sync existing config to the board
+        await whatsappSync.syncConfigToBoard();
+        
+        const boardUrl = `https://monday.com/boards/${board.id}`;
+        
+        return {
+          text: `✅ WhatsApp Allowlist Sync Enabled! 📱
+
+🏆 Your WhatsApp allowlist board is ready!
+📍 Board URL: ${boardUrl}
+
+All your WhatsApp contacts have been synced to the board.
+Any changes you make in the board will automatically sync back to your OpenClaw config!
+
+🔄 2-way sync is now active:
+- Board changes → Update OpenClaw config
+- New WhatsApp numbers → Auto-add to board
+- Status changes sync instantly
+
+View the full command guide with: /monday-whatsapp-sync --help`
+        };
+      } catch (error) {
+        return {
+          text: `❌ Failed to enable WhatsApp sync: ${error}
+
+Try running the command again or check your API token configuration.`
+        };
+      }
+    },
+  });
+
+  // Add the auto-logging command
+  api.registerCommand({
+    name: "monday-enable-auto-logging",
+    description: "Enable automatic AI session logging to monday.com analytics board",
+    acceptsArgs: false,
+    requireAuth: false,
+    handler: async (ctx: any) => {
+      if (tokenMissing) {
+        return { text: TOKEN_SETUP_MSG };
+      }
+      
+      // Import and use SessionLogger
+      const { SessionLogger } = await import("./hooks/session-logger.js");
+      const sessionLogger = new SessionLogger(client!);
+      
+      try {
+        // Create the analytics board
+        const board = await sessionLogger.ensureAnalyticsBoard();
+        
+        const boardUrl = `https://monday.com/boards/${board.id}`;
+        
+        return {
+          text: `✅ AUTO-LOGGING ACTIVATED! ⚡
+
+🏆 Your "AI Session Analytics" board is ready!
+📍 Board URL: ${boardUrl}
+
+From now on, every OpenClaw session will be automatically logged with:
+📊 Session summaries and productivity scores
+⏱️  Duration and message counts
+💰 Cost tracking (when available)
+🧠 Models used and session types
+🔗 Direct links back to your sessions
+
+Sit back and watch your AI productivity data grow! 📈`
+        };
+      } catch (error) {
+        return {
+          text: `❌ Failed to enable auto-logging: ${error}
+
+Try running the command again or check your API token configuration.`
+        };
+      }
     },
   });
 
@@ -510,7 +592,7 @@ Once set, restart the gateway and all 34 monday.com tools will be ready! 🚀`;
   if (api.registerHook) {
     api.registerHook({
       name: "onInstall",
-      handler: () => {
+      handler: async () => {
         if (tokenMissing) {
           console.log(`
 🦙 Welcome to monday.com OpenClaw Plugin! 🦙
@@ -524,7 +606,65 @@ Or check the quick start guide:
   /monday-quick-start
 `);
         } else {
+          // Show the welcome llama and fetch account info
           console.log(`
+       ▄▄
+      ▄██▄
+      █OO█
+      █< █
+      ████
+      ████
+      ██████████████████ ▌
+      ██████████████████
+      ██████████████████
+      ▀██████████████▀██
+      ▀███          ███▀
+       ▀██          ██▀
+         |          |
+
+    🎉 Welcome to monday.com OpenClaw! 🎉
+`);
+
+          try {
+            // Fetch account info
+            const accountInfo = await client!.query(`
+              query GetAccount {
+                me {
+                  name
+                  email
+                  account {
+                    name
+                    plan {
+                      version
+                    }
+                  }
+                }
+              }
+            `);
+
+            const user = accountInfo.data.me;
+            const account = user.account;
+
+            console.log(`
+✅ Connected successfully!
+
+👋 Hey ${user.name}!
+📧 ${user.email}
+🏢 Account: ${account.name} (${account.plan.version})
+
+🚀 All 34 monday.com tools are ready to use!
+
+Try these commands to get started:
+  /monday-quick-start       - Choose the right workflow for you
+  /monday-create-board      - Create a new board with templates
+  /monday-setup-project     - Set up a complete project workspace
+  /monday-enable-auto-logging - Auto-log AI sessions to monday.com
+  /monday-whatsapp-sync     - Sync WhatsApp contacts to monday.com
+
+Happy building! 🦙✨
+`);
+          } catch (error) {
+            console.log(`
 🦙 monday.com OpenClaw Plugin loaded successfully! 🦙
 
 All 34 tools are ready to use.
@@ -536,6 +676,7 @@ Try these commands to get started:
 
 Happy building! 🚀
 `);
+          }
         }
       },
     });
