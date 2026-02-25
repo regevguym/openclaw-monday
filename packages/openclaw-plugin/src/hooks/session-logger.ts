@@ -111,7 +111,7 @@ export class SessionLogger {
       }
 
       // Create new analytics board
-      const newBoard = await this.client.mutation(`
+      const newBoard = await this.client.query(`
         mutation CreateAnalyticsBoard($boardName: String!) {
           create_board(
             board_name: $boardName
@@ -155,7 +155,7 @@ export class SessionLogger {
     ];
 
     for (const column of columns) {
-      await this.client.mutation(`
+      await this.client.query(`
         mutation CreateColumn($boardId: ID!, $title: String!, $type: ColumnType!, $settings: JSON) {
           create_column(
             board_id: $boardId
@@ -184,7 +184,7 @@ export class SessionLogger {
     ];
 
     for (const group of groups) {
-      await this.client.mutation(`
+      await this.client.query(`
         mutation CreateGroup($boardId: ID!, $title: String!) {
           create_group(
             board_id: $boardId
@@ -227,7 +227,7 @@ export class SessionLogger {
       }
     };
 
-    const result = await this.client.mutation(`
+    const result = await this.client.query(`
       mutation LogSession($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
         create_item(
           board_id: $boardId

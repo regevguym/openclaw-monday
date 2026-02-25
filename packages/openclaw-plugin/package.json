@@ -5,6 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ]
+  },
   "scripts": {
     "build": "tsc",
     "test": "tsc --project tsconfig.test.json && node --test dist-tests/tests/*.test.js",
@@ -19,6 +24,11 @@
     "vitest": "^1.6.0",
     "tsx": "^4.7.0"
   },
-  "keywords": ["monday.com", "openclaw", "ai-agent", "graphql"],
+  "keywords": [
+    "monday.com",
+    "openclaw",
+    "ai-agent",
+    "graphql"
+  ],
   "license": "MIT"
 }
