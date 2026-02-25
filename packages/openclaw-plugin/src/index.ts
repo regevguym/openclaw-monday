@@ -586,100 +586,21 @@ Try running the command again or check your API token configuration.`
     },
   });
 
-  // --- Hooks ---
-  // Register onInstall hook for first-time setup experience
-
-  if (api.registerHook) {
-    api.registerHook({
-      name: "onInstall",
-      handler: async () => {
-        if (tokenMissing) {
-          console.log(`
-🦙 Welcome to monday.com OpenClaw Plugin! 🦙
-
-To get started, you'll need to configure your monday.com API token.
-
-Run this command for step-by-step setup instructions:
-  /monday-setup-token
-
-Or check the quick start guide:
-  /monday-quick-start
-`);
-        } else {
-          // Show the welcome llama and fetch account info
-          console.log(`
-       ▄▄
-      ▄██▄
-      █OO█
-      █< █
-      ████
-      ████
-      ██████████████████ ▌
-      ██████████████████
-      ██████████████████
-      ▀██████████████▀██
-      ▀███          ███▀
-       ▀██          ██▀
-         |          |
-
-    🎉 Welcome to monday.com OpenClaw! 🎉
-`);
-
-          try {
-            // Fetch account info
-            const accountInfo = await client!.query(`
-              query GetAccount {
-                me {
-                  name
-                  email
-                  account {
-                    name
-                    plan {
-                      version
-                    }
-                  }
-                }
-              }
-            `);
-
-            const user = accountInfo.data.me;
-            const account = user.account;
-
-            console.log(`
-✅ Connected successfully!
-
-👋 Hey ${user.name}!
-📧 ${user.email}
-🏢 Account: ${account.name} (${account.plan.version})
-
-🚀 All 34 monday.com tools are ready to use!
-
-Try these commands to get started:
-  /monday-quick-start       - Choose the right workflow for you
-  /monday-create-board      - Create a new board with templates
-  /monday-setup-project     - Set up a complete project workspace
-  /monday-enable-auto-logging - Auto-log AI sessions to monday.com
-  /monday-whatsapp-sync     - Sync WhatsApp contacts to monday.com
-
-Happy building! 🦙✨
-`);
-          } catch (error) {
-            console.log(`
-🦙 monday.com OpenClaw Plugin loaded successfully! 🦙
-
-All 34 tools are ready to use.
-
-Try these commands to get started:
-  /monday-quick-start    - Choose the right workflow for you
-  /monday-create-board   - Create a new board with templates
-  /monday-setup-project  - Set up a complete project workspace
-
-Happy building! 🚀
-`);
-          }
-        }
-      },
-    });
+  // --- Welcome Message ---
+  if (tokenMissing) {
+    console.log(`[monday-com] 🦙 Plugin loaded — no API token configured. Run /monday-setup-token to get started.`);
+  } else {
+    console.log(`[monday-com] 🦙 Plugin loaded with API token. Fetching account info...`);
+    client!.query(`query { me { name email account { name plan { version } } } }`)
+      .then((res: any) => {
+        const user = res.data.me;
+        const account = user.account;
+        const plan = account?.plan?.version || 'free';
+        console.log(`[monday-com] ✅ Connected as ${user.name} (${account.name} - ${plan})`);
+      })
+      .catch(() => {
+        console.log(`[monday-com] ⚠️ Could not verify token — tools are loaded but API connection may fail.`);
+      });
   }
 }
 
