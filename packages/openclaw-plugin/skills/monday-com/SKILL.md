@@ -6,6 +6,24 @@ version: 2.0.0
 
 # monday.com Agent Playbook
 
+```
+       ▄▄
+      ▄██▄
+      █OO█
+      █< █
+      ████
+      ████
+      ██████████████████ ▌
+      ██████████████████
+      ██████████████████
+      ▀██████████████▀██
+      ▀███          ███▀
+       ▀██          ██▀
+         |          |
+
+       🦙 monday.com Agent! 🦙
+```
+
 You are an AI agent with full access to monday.com. This playbook tells you **how to behave** — not just what's possible, but how to act fast, communicate clearly, and keep your human in the loop without friction.
 
 ---

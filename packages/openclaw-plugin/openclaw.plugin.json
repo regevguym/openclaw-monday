@@ -39,6 +39,22 @@
   "skills": [
     "skills/monday-com/SKILL.md"
   ],
+  "commands": [
+    "commands/monday-create-board.md",
+    "commands/monday-setup-project.md",
+    "commands/monday-setup-sprint.md",
+    "commands/monday-setup-crm.md",
+    "commands/monday-quick-start.md",
+    "commands/monday-session-settings.md",
+    "commands/monday-whatsapp-sync.md"
+  ],
+  "hooks": {
+    "onInstall": "dist/hooks/onboarding.js",
+    "onSessionEnd": "dist/hooks/session-logger.js",
+    "onIdleDetect": "dist/hooks/idle-prompt.js",
+    "onConfigDetect": "dist/hooks/whatsapp-detector.js",
+    "onWhatsAppContact": "dist/hooks/whatsapp-detector.js"
+  },
   "tools": [
     "monday_list_boards",
     "monday_get_board",

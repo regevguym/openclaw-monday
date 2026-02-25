@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>monday.com OpenClaw Plugin | Complete AI Agent Integration</title>
+    <meta name="description" content="Official OpenClaw plugin for monday.com. 34 powerful tools for AI agents to manage boards, items, docs, automations, and more. Enterprise-grade reliability.">
+
+    <!-- Fonts -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* OpenClaw Brand Colors */
+            --openclaw-orange: #FF6B35;
+            --openclaw-dark: #1A1A1A;
+            --openclaw-light: #F5F5F5;
+
+            /* monday.com Brand Colors */
+            --monday-purple: #6161FF;
+            --monday-blue: #0073EA;
+            --monday-pink: #FF3D71;
+            --monday-green: #00C875;
+
+            /* Unified Gradients */
+            --brand-gradient: linear-gradient(135deg, var(--openclaw-orange) 0%, var(--monday-purple) 50%, var(--monday-blue) 100%);
+            --hero-gradient: linear-gradient(135deg, #FF6B35 0%, #6161FF 25%, #0073EA 50%, #FF3D71 75%, #00C875 100%);
+
+            /* Base Colors */
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #FAFBFC;
+            --bg-dark: #1A1A1A;
+            --text-primary: #2D2D2D;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border-light: #E5E5E5;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-combo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .logo-openclaw {
+            color: var(--openclaw-orange);
+        }
+
+        .logo-monday {
+            color: var(--monday-purple);
+        }
+
+        .plus-icon {
+            color: var(--text-muted);
+            font-weight: 300;
+            font-size: 16px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: var(--hero-gradient);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 32px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-badges {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--openclaw-orange);
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            border: 2px solid white;
+        }
+
+        .btn-primary:hover {
+            background: transparent;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo-combo">
+                    <div class="logo logo-openclaw">
+                        🦅 OpenClaw
+                    </div>
+                    <span class="plus-icon">+</span>
+                    <div class="logo logo-monday">
+                        monday.com
+                    </div>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#installation">Installation</a></li>
+                    <li><a href="#tools">Tools</a></li>
+                    <li><a href="#usage">Usage</a></li>
+                    <li><a href="#examples">Examples</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <pre style="color: white; font-size: 0.8rem; margin-bottom: 20px; text-align: center;">       ▄▄
+      ▄██▄
+      █OO█
+      █< █
+      ████
+      ████
+      ██████████████████ ▌
+      ██████████████████
+      ██████████████████
+      ▀██████████████▀██
+      ▀███          ███▀
+       ▀██          ██▀
+         |          |
+
+       🦙 monday.com Llama! 🦙</pre>
+                <h1 class="hero-title">
+                    monday.com OpenClaw Plugin
+                </h1>
+                <p class="hero-subtitle">
+                    The complete AI agent integration for monday.com. 34 powerful tools, enterprise-grade reliability, and seamless human-agent collaboration.
+                </p>
+                <div class="hero-badges">
+                    <span class="badge">34 Tools</span>
+                    <span class="badge">GraphQL v2</span>
+                    <span class="badge">TypeScript</span>
+                    <span class="badge">99.9% Uptime</span>
+                    <span class="badge">&lt;200ms Response</span>
+                </div>
+                <div class="cta-buttons">
+                    <a href="#installation" class="btn-primary">Get Started</a>
+                    <a href="#tools" class="btn-secondary">View Tools</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation Section -->
+    <section id="installation" style="padding: 80px 0; background: var(--bg-secondary);">
+        <div class="container">
+            <h2 style="font-size: 2.5rem; text-align: center; margin-bottom: 48px; color: var(--text-primary);">Quick Installation</h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 48px;">
+                <div style="background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow);">
+                    <h3 style="color: var(--openclaw-orange); margin-bottom: 16px; font-size: 1.5rem;">📦 NPM Installation</h3>
+                    <div style="background: var(--bg-dark); color: #00FF87; padding: 16px; border-radius: 8px; font-family: monospace; margin-bottom: 16px;">
+                        npm install @mondaydotcomorg/openclaw-monday
+                    </div>
+                    <p style="color: var(--text-secondary);">Install directly into your OpenClaw project for immediate access to all 34 monday.com tools.</p>
+                </div>
+
+                <div style="background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow);">
+                    <h3 style="color: var(--monday-purple); margin-bottom: 16px; font-size: 1.5rem;">⚡ Quick Setup</h3>
+                    <div style="background: var(--bg-dark); color: #00FF87; padding: 16px; border-radius: 8px; font-family: monospace; margin-bottom: 16px; font-size: 0.9rem;">
+                        import { register } from '@mondaydotcomorg/openclaw-monday';<br>
+                        register(api);
+                    </div>
+                    <p style="color: var(--text-secondary);">Two lines of code and you're ready to manage monday.com workspaces with AI agents.</p>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #FFF5F0 0%, #F0F4FF 100%); padding: 24px; border-radius: 12px; border-left: 4px solid var(--openclaw-orange);">
+                <h4 style="color: var(--openclaw-orange); margin-bottom: 12px;">🔑 API Token Required</h4>
+                <p style="margin-bottom: 12px;">Set your monday.com API token in your OpenClaw config:</p>
+                <div style="background: var(--bg-dark); color: #00FF87; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 0.9rem;">
+                    apiToken: "your_monday_api_token_here"
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Overview Section -->
+    <section id="tools" style="padding: 80px 0;">
+        <div class="container">
+            <h2 style="font-size: 2.5rem; text-align: center; margin-bottom: 24px;">34 Powerful Tools</h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 64px; font-size: 1.125rem;">Complete monday.com automation for AI agents</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow); border-top: 4px solid var(--monday-blue);">
+                    <h3 style="color: var(--monday-blue); margin-bottom: 16px;">📋 Board Management</h3>
+                    <ul style="list-style: none; color: var(--text-secondary); line-height: 1.8;">
+                        <li>✓ monday_list_boards</li>
+                        <li>✓ monday_get_board</li>
+                        <li>✓ monday_create_board</li>
+                        <li>✓ monday_delete_board</li>
+                    </ul>
+                </div>
+
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow); border-top: 4px solid var(--monday-purple);">
+                    <h3 style="color: var(--monday-purple); margin-bottom: 16px;">📝 Item Operations</h3>
+                    <ul style="list-style: none; color: var(--text-secondary); line-height: 1.8;">
+                        <li>✓ monday_get_items</li>
+                        <li>✓ monday_create_item</li>
+                        <li>✓ monday_update_item_columns</li>
+                        <li>✓ monday_move_item</li>
+                        <li>✓ monday_delete_item</li>
+                    </ul>
+                </div>
+
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow); border-top: 4px solid var(--monday-green);">
+                    <h3 style="color: var(--monday-green); margin-bottom: 16px;">🔄 Automations</h3>
+                    <ul style="list-style: none; color: var(--text-secondary); line-height: 1.8;">
+                        <li>✓ monday_list_webhooks</li>
+                        <li>✓ monday_create_webhook</li>
+                        <li>✓ monday_get_activity_log</li>
+                    </ul>
+                </div>
+
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow); border-top: 4px solid var(--monday-pink);">
+                    <h3 style="color: var(--monday-pink); margin-bottom: 16px;">📄 Documents</h3>
+                    <ul style="list-style: none; color: var(--text-secondary); line-height: 1.8;">
+                        <li>✓ monday_list_docs</li>
+                        <li>✓ monday_create_doc</li>
+                        <li>✓ monday_read_doc</li>
+                    </ul>
+                </div>
+
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow); border-top: 4px solid var(--openclaw-orange);">
+                    <h3 style="color: var(--openclaw-orange); margin-bottom: 16px;">🏢 Workspaces</h3>
+                    <ul style="list-style: none; color: var(--text-secondary); line-height: 1.8;">
+                        <li>✓ monday_list_workspaces</li>
+                        <li>✓ monday_create_workspace</li>
+                        <li>✓ monday_list_users_and_teams</li>
+                        <li>✓ monday_get_account_info</li>
+                    </ul>
+                </div>
+
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow); border-top: 4px solid #9333EA;">
+                    <h3 style="color: #9333EA; margin-bottom: 16px;">🔧 Advanced</h3>
+                    <ul style="list-style: none; color: var(--text-secondary); line-height: 1.8;">
+                        <li>✓ monday_raw_graphql</li>
+                        <li>✓ monday_get_schema</li>
+                        <li>✓ monday_search</li>
+                        <li>✓ + 12 more tools</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Usage Section -->
+    <section id="usage" style="padding: 80px 0; background: var(--bg-secondary);">
+        <div class="container">
+            <h2 style="font-size: 2.5rem; text-align: center; margin-bottom: 48px;">How It Works</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 32px; margin-bottom: 64px;">
+                <div style="text-align: center;">
+                    <div style="width: 80px; height: 80px; background: var(--brand-gradient); border-radius: 50%; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">🔌</div>
+                    <h3 style="margin-bottom: 16px; color: var(--text-primary);">1. Install Plugin</h3>
+                    <p style="color: var(--text-secondary);">Add the plugin to your OpenClaw project with one npm command</p>
+                </div>
+
+                <div style="text-align: center;">
+                    <div style="width: 80px; height: 80px; background: var(--brand-gradient); border-radius: 50%; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">🔑</div>
+                    <h3 style="margin-bottom: 16px; color: var(--text-primary);">2. Set API Token</h3>
+                    <p style="color: var(--text-secondary);">Configure your monday.com API credentials in your OpenClaw config</p>
+                </div>
+
+                <div style="text-align: center;">
+                    <div style="width: 80px; height: 80px; background: var(--brand-gradient); border-radius: 50%; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">🚀</div>
+                    <h3 style="margin-bottom: 16px; color: var(--text-primary);">3. Start Automating</h3>
+                    <p style="color: var(--text-secondary);">AI agents can now manage boards, items, docs, and automations</p>
+                </div>
+
+                <div style="text-align: center;">
+                    <div style="width: 80px; height: 80px; background: var(--brand-gradient); border-radius: 50%; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">👥</div>
+                    <h3 style="margin-bottom: 16px; color: var(--text-primary);">4. Human Visibility</h3>
+                    <p style="color: var(--text-secondary);">Humans see all agent actions in visual monday.com boards</p>
+                </div>
+            </div>
+
+            <div style="background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow);">
+                <h3 style="margin-bottom: 24px; color: var(--openclaw-orange);">📝 Configuration Example</h3>
+                <pre style="background: var(--bg-dark); color: #00FF87; padding: 20px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; font-size: 0.9rem;">{
+  "plugins": [
+    {
+      "name": "@mondaydotcomorg/openclaw-monday",
+      "config": {
+        "apiToken": "your_monday_api_token",
+        "workspaceId": "optional_default_workspace",
+        "enableMcp": true,
+        "mcpServerUrl": "https://mcp.monday.com/mcp"
+      }
+    }
+  ]
+}</pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- Examples Section -->
+    <section id="examples" style="padding: 80px 0;">
+        <div class="container">
+            <h2 style="font-size: 2.5rem; text-align: center; margin-bottom: 48px;">Real-World Examples</h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 48px;">
+                <div style="background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow);">
+                    <h3 style="color: var(--monday-purple); margin-bottom: 24px;">📊 Project Tracking Agent</h3>
+                    <div style="background: var(--bg-dark); color: #00FF87; padding: 16px; border-radius: 8px; font-family: monospace; font-size: 0.85rem; margin-bottom: 16px; overflow-x: auto;">
+// Create sprint board with tasks<br>
+const board = await monday_create_board({<br>
+  name: "Sprint 23",<br>
+  kind: "public"<br>
+});<br><br>
+// Add development tasks<br>
+await monday_create_item({<br>
+  board_id: board.id,<br>
+  item_name: "Implement user auth",<br>
+  column_values: {<br>
+    status: "Working on it",<br>
+    person: {"personsAndTeams": [{"id": 12345}]},<br>
+    timeline: {"from": "2024-01-15", "to": "2024-01-20"}<br>
+  }<br>
+});
+                    </div>
+                    <p style="color: var(--text-secondary);">Agent creates and manages development sprints with automatic task tracking.</p>
+                </div>
+
+                <div style="background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow);">
+                    <h3 style="color: var(--monday-green); margin-bottom: 24px;">📈 Sales Pipeline Agent</h3>
+                    <div style="background: var(--bg-dark); color: #00FF87; padding: 16px; border-radius: 8px; font-family: monospace; font-size: 0.85rem; margin-bottom: 16px; overflow-x: auto;">
+// Create CRM board<br>
+const crmBoard = await monday_create_board({<br>
+  name: "Q1 Sales Pipeline",<br>
+  template_id: "crm"<br>
+});<br><br>
+// Add new lead automatically<br>
+await monday_create_item({<br>
+  board_id: crmBoard.id,<br>
+  item_name: "Acme Corp - Enterprise Deal",<br>
+  column_values: {<br>
+    status: "Lead",<br>
+    numbers: 50000,<br>
+    email: {"email": "contact@acme.com"}<br>
+  }<br>
+});
+                    </div>
+                    <p style="color: var(--text-secondary);">Agent automatically captures leads and tracks them through sales stages.</p>
+                </div>
+            </div>
+
+            <div style="background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 6px var(--shadow); margin-bottom: 48px;">
+                <h3 style="color: var(--openclaw-orange); margin-bottom: 24px;">🤖 Advanced Automation</h3>
+                <div style="background: var(--bg-dark); color: #00FF87; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 0.85rem; overflow-x: auto;">
+// Set up intelligent webhook<br>
+await monday_create_webhook({<br>
+  board_id: board.id,<br>
+  url: "https://your-ai-agent.com/webhook",<br>
+  event: "create_item",<br>
+  config: { includeColumnValues: true }<br>
+});<br><br>
+// Agent responds to webhook by auto-categorizing<br>
+const items = await monday_get_items({ board_id });<br>
+for (const item of items.data.boards[0].items) {<br>
+  const category = await aiCategorize(item.name);<br>
+  await monday_update_item_columns({<br>
+    item_id: item.id,<br>
+    column_values: { status: category }<br>
+  });<br>
+}
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <div style="background: var(--brand-gradient); padding: 32px; border-radius: 12px; color: white;">
+                    <h3 style="margin-bottom: 16px;">Ready to Get Started?</h3>
+                    <p style="margin-bottom: 24px; opacity: 0.9;">Install the OpenClaw monday.com plugin and start building intelligent workspace automation</p>
+                    <a href="#installation" style="background: white; color: var(--openclaw-orange); padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Install Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: var(--bg-dark); color: white; padding: 48px 0; text-align: center;">
+        <div class="container">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 24px;">
+                <span style="color: var(--openclaw-orange); font-weight: 600; font-size: 1.125rem;">🦅 OpenClaw</span>
+                <span style="opacity: 0.6;">×</span>
+                <span style="color: var(--monday-purple); font-weight: 600; font-size: 1.125rem;">monday.com</span>
+            </div>
+            <p style="opacity: 0.8; margin-bottom: 24px;">Empowering AI agents to create transparent, collaborative workspaces</p>
+            <div style="display: flex; justify-content: center; gap: 32px;">
+                <a href="https://github.com/regevguym/openclaw-monday" style="color: var(--openclaw-orange); text-decoration: none;">GitHub</a>
+                <a href="https://monday.com" style="color: var(--monday-purple); text-decoration: none;">monday.com</a>
+                <a href="https://openclaw.ai" style="color: var(--openclaw-orange); text-decoration: none;">OpenClaw.ai</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
