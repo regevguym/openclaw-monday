@@ -593,10 +593,10 @@ Try running the command again or check your API token configuration.`
     console.log(`[monday-com] 🦙 Plugin loaded with API token. Fetching account info...`);
     client!.query(`query { me { name email account { name plan { version } } } }`)
       .then((res: any) => {
-        const user = res.data.me;
-        const account = user.account;
+        const user = res.data?.me || res.me;
+        const account = user?.account;
         const plan = account?.plan?.version || 'free';
-        console.log(`[monday-com] ✅ Connected as ${user.name} (${account.name} - ${plan})`);
+        console.log(`[monday-com] ✅ Connected as ${user?.name} (${account?.name} - ${plan})`);
       })
       .catch(() => {
         console.log(`[monday-com] ⚠️ Could not verify token — tools are loaded but API connection may fail.`);
