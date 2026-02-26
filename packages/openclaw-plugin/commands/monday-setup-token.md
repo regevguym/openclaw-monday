@@ -43,7 +43,7 @@ Your API token is like a key that lets me access your monday.com account safely.
 3. Make sure you're logged in and can see your workspace
 
 ### **Step 2: Open Developer Settings**
-1. **Find your avatar** (profile picture) in the **bottom-left corner**
+1. **Find your avatar** (profile picture) in the **upper right corner**
 2. **Click your avatar** - a menu will appear
 3. **Select "Developers"** from the menu (look for the `</>` icon)
 

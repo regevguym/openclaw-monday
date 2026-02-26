@@ -1,7 +1,7 @@
 /**
  * OpenClaw Plugin for monday.com
  *
- * Entry point that registers all 34 tools with the OpenClaw plugin API.
+ * Entry point that registers all tools with the OpenClaw plugin API.
  * Provides comprehensive monday.com management capabilities for AI agents.
  */
 
@@ -57,7 +57,7 @@ I'm ready to supercharge your monday.com workflow, but I need your API token fir
    Run: /monday-setup-token
 
 🎯 **What you'll get:**
-   • 34 powerful monday.com tools
+   • Comprehensive monday.com tools
    • Interactive board creation wizards
    • AI session logging
    • WhatsApp contact sync

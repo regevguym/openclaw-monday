@@ -161,7 +161,7 @@ The smoke test creates a temporary private board, adds items, and cleans up afte
 ## Getting Your API Token
 
 1. Log in to monday.com
-2. Click your avatar (bottom-left)
+2. Click your avatar (upper right)
 3. Select **Developers**
 4. Go to **My Access Tokens**
 5. Click **Show** or generate a new token

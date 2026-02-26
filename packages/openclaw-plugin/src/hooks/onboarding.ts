@@ -249,7 +249,7 @@ I'll wait here while you get your API token from monday.com.
 
 🎯 **Quick recap of what you're doing:**
    1. Log into monday.com
-   2. Click your avatar (bottom-left)
+   2. Click your avatar (upper right)
    3. Select "Developers"
    4. Go to "My Access Tokens"
    5. Generate a new token

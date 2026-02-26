@@ -1,5 +1,5 @@
 /**
- * Verify all 34 tools register correctly with the OpenClaw plugin API.
+ * Verify all tools register correctly with the OpenClaw plugin API.
  */
 
 import { describe, it, beforeEach, mock } from "node:test";
@@ -24,16 +24,6 @@ describe("Tool Registration", () => {
         registeredTools.set(tool.name, tool);
       },
     };
-  });
-
-  it("should register all 34 tools", () => {
-    register(mockApi);
-    assert.equal(registeredTools.size, 34, `Expected 34 tools, got ${registeredTools.size}`);
-  });
-
-  it("should throw if no API token provided", () => {
-    mockApi.config.get = () => undefined;
-    assert.throws(() => register(mockApi), /API token is required/);
   });
 
   const expectedTools = [
@@ -87,6 +77,17 @@ describe("Tool Registration", () => {
     // Account (1)
     "monday_get_account_info",
   ];
+
+  it("should register all expected tools", () => {
+    register(mockApi);
+    const expectedCount = expectedTools.length;
+    assert.equal(registeredTools.size, expectedCount, `Expected ${expectedCount} tools, got ${registeredTools.size}`);
+  });
+
+  it("should throw if no API token provided", () => {
+    mockApi.config.get = () => undefined;
+    assert.throws(() => register(mockApi), /API token is required/);
+  });
 
   it("should register each expected tool by name", () => {
     register(mockApi);
