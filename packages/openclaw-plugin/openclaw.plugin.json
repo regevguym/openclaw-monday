@@ -1,5 +1,6 @@
 {
   "$schema": "https://openclaw.ai/schemas/plugin/v1.json",
+  "id": "monday-com",
   "name": "monday-com",
   "displayName": "monday.com",
   "version": "0.1.0",
@@ -31,7 +32,7 @@
         "default": true
       }
     },
-    "required": ["apiToken"]
+    "required": []
   },
   "envMapping": {
     "apiToken": "MONDAY_API_TOKEN"

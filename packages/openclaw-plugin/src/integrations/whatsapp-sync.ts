@@ -187,7 +187,8 @@ This makes WhatsApp contact management super smooth!
         }
       `);
 
-      const existingBoard = boards.data.boards.find((b: any) =>
+      const boardList = boards?.data?.boards || boards.boards || [];
+      const existingBoard = boardList.find((b: any) =>
         b.name === boardName || b.name.includes("WhatsApp")
       );
 
@@ -197,7 +198,7 @@ This makes WhatsApp contact management super smooth!
       }
 
       // Create new allowlist board
-      const newBoard = await this.client.mutation(`
+      const newBoard = await this.client.query(`
         mutation CreateAllowlistBoard($boardName: String!) {
           create_board(
             board_name: $boardName
@@ -210,7 +211,8 @@ This makes WhatsApp contact management super smooth!
         }
       `, { boardName });
 
-      const boardId = newBoard.data.create_board.id;
+      const created = newBoard?.data?.create_board || newBoard.create_board;
+      const boardId = created.id;
       await this.setupAllowlistBoardStructure(boardId);
 
       this.allowlistBoard = { id: boardId, name: boardName };
@@ -248,7 +250,7 @@ This makes WhatsApp contact management super smooth!
     ];
 
     for (const column of columns) {
-      await this.client.mutation(`
+      await this.client.query(`
         mutation CreateColumn($boardId: ID!, $title: String!, $type: ColumnType!, $settings: JSON) {
           create_column(
             board_id: $boardId
@@ -277,7 +279,7 @@ This makes WhatsApp contact management super smooth!
     ];
 
     for (const group of groups) {
-      await this.client.mutation(`
+      await this.client.query(`
         mutation CreateGroup($boardId: ID!, $title: String!) {
           create_group(
             board_id: $boardId
@@ -353,7 +355,7 @@ This makes WhatsApp contact management super smooth!
       auto_sync: true
     };
 
-    await this.client.mutation(`
+    await this.client.query(`
       mutation AddContact($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
         create_item(
           board_id: $boardId
@@ -427,7 +429,8 @@ This makes WhatsApp contact management super smooth!
         }
       `, { boardId: this.allowlistBoard.id.toString() });
 
-      const items = boardData.data.boards[0].items_page.items;
+      const boardsList = boardData?.data?.boards || boardData.boards || [];
+      const items = boardsList[0]?.items_page?.items || [];
       const contacts = this.parseContactsFromBoard(items);
 
       // Update OpenClaw config

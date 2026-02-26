@@ -2,3 +2,8 @@ node_modules/
 dist/
 dist-tests/
 *.tsbuildinfo
+
+# Secrets & environment variables
+.env
+.env.*
+.env.local
