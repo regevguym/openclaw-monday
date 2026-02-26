@@ -101,7 +101,8 @@ export class SessionLogger {
         }
       `);
 
-      const existingBoard = boards.data.boards.find((b: any) =>
+      const boardList = boards?.data?.boards || boards.boards || [];
+      const existingBoard = boardList.find((b: any) =>
         b.name === boardName || b.name.includes("AI Session")
       );
 
@@ -124,7 +125,8 @@ export class SessionLogger {
         }
       `, { boardName });
 
-      const boardId = newBoard.data.create_board.id;
+      const created = newBoard?.data?.create_board || newBoard.create_board;
+      const boardId = created.id;
 
       // Set up the board structure
       await this.setupBoardStructure(boardId);

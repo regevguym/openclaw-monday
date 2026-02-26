@@ -187,7 +187,8 @@ This makes WhatsApp contact management super smooth!
         }
       `);
 
-      const existingBoard = boards.data.boards.find((b: any) =>
+      const boardList = boards?.data?.boards || boards.boards || [];
+      const existingBoard = boardList.find((b: any) =>
         b.name === boardName || b.name.includes("WhatsApp")
       );
 
@@ -210,7 +211,8 @@ This makes WhatsApp contact management super smooth!
         }
       `, { boardName });
 
-      const boardId = newBoard.data.create_board.id;
+      const created = newBoard?.data?.create_board || newBoard.create_board;
+      const boardId = created.id;
       await this.setupAllowlistBoardStructure(boardId);
 
       this.allowlistBoard = { id: boardId, name: boardName };
@@ -427,7 +429,8 @@ This makes WhatsApp contact management super smooth!
         }
       `, { boardId: this.allowlistBoard.id.toString() });
 
-      const items = boardData.data.boards[0].items_page.items;
+      const boardsList = boardData?.data?.boards || boardData.boards || [];
+      const items = boardsList[0]?.items_page?.items || [];
       const contacts = this.parseContactsFromBoard(items);
 
       // Update OpenClaw config
