@@ -38,7 +38,8 @@
     "apiToken": "MONDAY_API_TOKEN"
   },
   "skills": [
-    "skills/monday-com/SKILL.md"
+    "skills/monday-com/SKILL.md",
+    "skills/monday-com/monday-soul.md"
   ],
   "commands": [
     "commands/monday-setup-token.md",
@@ -48,14 +49,16 @@
     "commands/monday-setup-crm.md",
     "commands/monday-quick-start.md",
     "commands/monday-session-settings.md",
-    "commands/monday-whatsapp-sync.md"
+    "commands/monday-whatsapp-sync.md",
+    "commands/monday-notifications.md"
   ],
   "hooks": {
     "onInstall": "dist/hooks/onboarding.js",
     "onSessionEnd": "dist/hooks/session-logger.js",
     "onIdleDetect": "dist/hooks/idle-prompt.js",
     "onConfigDetect": "dist/hooks/whatsapp-detector.js",
-    "onWhatsAppContact": "dist/hooks/whatsapp-detector.js"
+    "onWhatsAppContact": "dist/hooks/whatsapp-detector.js",
+    "onNotification": "dist/hooks/notification-hook.js"
   },
   "tools": [
     "monday_list_boards",
@@ -91,7 +94,10 @@
     "monday_create_webhook",
     "monday_get_activity_log",
     "monday_add_file_to_column",
-    "monday_get_account_info"
+    "monday_get_account_info",
+    "monday_get_notifications",
+    "monday_get_notification_stats",
+    "monday_configure_notifications"
   ],
   "categories": ["productivity", "project-management", "work-management"],
   "keywords": ["monday.com", "project-management", "work-os", "boards", "items"]

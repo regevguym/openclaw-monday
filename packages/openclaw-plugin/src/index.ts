@@ -24,6 +24,9 @@ import * as automations from "./tools/automations.js";
 import * as activity from "./tools/activity.js";
 import * as files from "./tools/files.js";
 import * as account from "./tools/account.js";
+import * as notifications from "./tools/notifications.js";
+import { NotificationForwarder } from "./integrations/notification-forwarder.js";
+import { NotificationHandler } from "./hooks/notification-hook.js";
 
 export interface PluginConfig {
   /** monday.com API token */
@@ -75,6 +78,15 @@ export function register(api: any) {
       apiToken: config.apiToken!,
       serverUrl: config.mcpServerUrl,
     });
+  }
+
+  // --- Notification Forwarder ---
+  let notificationForwarder: NotificationForwarder | null = null;
+  let notificationHandler: NotificationHandler | null = null;
+
+  if (!tokenMissing && client) {
+    notificationForwarder = new NotificationForwarder(client);
+    notificationHandler = new NotificationHandler(notificationForwarder);
   }
 
   const TOKEN_SETUP_MSG = `🦙 **monday.com API token not configured!**
@@ -400,6 +412,47 @@ Once set, restart the gateway and all 34 monday.com tools will be ready! 🚀`;
     execute: guarded(account.getAccountInfo),
   });
 
+  // --- Notification Tools ---
+
+  api.registerTool({
+    name: "monday_get_notifications",
+    description: "Fetch recent monday.com notifications with enriched context (item details, board info, recent updates).",
+    parameters: notifications.GetNotificationsParams,
+    execute: async (_id: string, params: any) => {
+      const msg = requireToken();
+      if (msg) return toolResult(msg);
+      if (!notificationForwarder) return toolResult("Notification forwarder not initialized.");
+      const result = await notifications.getNotifications(client!, notificationForwarder, params);
+      return toolResult(result);
+    },
+  });
+
+  api.registerTool({
+    name: "monday_get_notification_stats",
+    description: "Get notification counts by type (mentions, assignments, status changes, replies) and polling status.",
+    parameters: notifications.GetNotificationStatsParams,
+    execute: async (_id: string, _params: any) => {
+      const msg = requireToken();
+      if (msg) return toolResult(msg);
+      if (!notificationForwarder) return toolResult("Notification forwarder not initialized.");
+      const result = await notifications.getNotificationStats(client!, notificationForwarder);
+      return toolResult(result);
+    },
+  });
+
+  api.registerTool({
+    name: "monday_configure_notifications",
+    description: "Enable/disable notification polling or change the poll interval.",
+    parameters: notifications.ConfigureNotificationsParams,
+    execute: async (_id: string, params: any) => {
+      const msg = requireToken();
+      if (msg) return toolResult(msg);
+      if (!notificationForwarder) return toolResult("Notification forwarder not initialized.");
+      const result = await notifications.configureNotifications(client!, notificationForwarder, params);
+      return toolResult(result);
+    },
+  });
+
   // --- Slash Commands ---
   // Register all 8 slash commands from markdown files
 
@@ -586,6 +639,50 @@ Try running the command again or check your API token configuration.`
     },
   });
 
+  api.registerCommand({
+    name: "monday-notifications",
+    description: "Manage monday.com notification forwarding to the OpenClaw AI agent",
+    acceptsArgs: false,
+    requireAuth: false,
+    handler: async (ctx: any) => {
+      if (tokenMissing) {
+        return { text: TOKEN_SETUP_MSG };
+      }
+
+      if (!notificationForwarder) {
+        return { text: "Notification forwarder not initialized. Please check your API token." };
+      }
+
+      try {
+        await notificationForwarder.startPolling();
+        return {
+          text: `✅ Notification Forwarding Activated! 📬
+
+🏆 Your monday.com notifications are now being monitored!
+
+🔄 Polling every 60 seconds for new notifications
+🧠 AI agent will process each notification using monday-soul.md rules
+📱 Important notifications will be forwarded to your messaging gateway
+
+The agent will automatically:
+- Auto-respond to simple mentions and assignments
+- Take action on items when appropriate
+- Alert you about urgent items and deadlines
+- Batch low-priority updates
+
+Use \`monday_configure_notifications\` to adjust settings.
+Use \`monday_get_notification_stats\` to see notification analytics.`
+        };
+      } catch (error) {
+        return {
+          text: `❌ Failed to start notification forwarding: ${error}
+
+Try running the command again or check your API token configuration.`
+        };
+      }
+    },
+  });
+
   // --- Welcome Message ---
   if (tokenMissing) {
     console.log(`[monday-com] 🦙 Plugin loaded — no API token configured. Run /monday-setup-token to get started.`);
@@ -597,6 +694,13 @@ Try running the command again or check your API token configuration.`
         const account = user?.account;
         const plan = account?.plan?.version || 'free';
         console.log(`[monday-com] ✅ Connected as ${user?.name} (${account?.name} - ${plan})`);
+
+        // Start notification polling after successful account verification
+        if (notificationForwarder) {
+          notificationForwarder.startPolling().catch((err: any) => {
+            console.log(`[monday-com] ⚠️ Notification polling failed to start: ${err}`);
+          });
+        }
       })
       .catch(() => {
         console.log(`[monday-com] ⚠️ Could not verify token — tools are loaded but API connection may fail.`);
