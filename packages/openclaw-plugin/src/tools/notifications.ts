@@ -1,6 +1,9 @@
 /**
  * Notification tools for monday.com
  * Tools: monday_get_notifications, monday_get_notification_stats, monday_configure_notifications
+ *
+ * Uses the `updates` top-level query since the monday.com API v2024-10
+ * does not expose a `notifications` field.
  */
 
 import { Type, type Static } from "@sinclair/typebox";
@@ -45,84 +48,77 @@ export async function getNotifications(
 
   const data = await client.queryWithRetry(
     `query {
-      me {
-        notifications(limit: ${limit}) {
+      updates(limit: ${limit}) {
+        id
+        text_body
+        body
+        created_at
+        creator_id
+        creator { id name }
+        item_id
+        item {
           id
-          title
-          text
+          name
+          board { id name }
+        }
+        replies {
+          id
+          text_body
+          creator { name }
           created_at
-          updated_at
         }
       }
     }`
   );
 
-  const notifications = data?.me?.notifications || [];
+  const updates = data?.updates || [];
 
   return {
-    notifications,
-    count: notifications.length,
+    updates,
+    count: updates.length,
     polling_active: forwarder.isPolling,
     seen_count: forwarder.seenCount,
   };
 }
 
 export async function getNotificationStats(
-  _client: MondayClient,
+  client: MondayClient,
   forwarder: NotificationForwarder
 ) {
-  // Fetch a batch to compute stats
-  const data = await _client.queryWithRetry(
+  const data = await client.queryWithRetry(
     `query {
-      me {
-        notifications(limit: 50) {
-          id
-          title
-          text
-          created_at
-        }
+      updates(limit: 50) {
+        id
+        text_body
+        body
+        created_at
+        creator_id
+        replies { id }
       }
     }`
   );
 
-  const notifications = data?.me?.notifications || [];
+  const updates = data?.updates || [];
 
-  // Classify notifications by type heuristic
   const stats = {
-    total: notifications.length,
+    total: updates.length,
     by_type: {
-      mention: 0,
-      assignment: 0,
-      status_change: 0,
-      reply: 0,
-      other: 0,
+      with_replies: 0,
+      by_system: 0,
+      by_users: 0,
     },
     polling_active: forwarder.isPolling,
     seen_count: forwarder.seenCount,
   };
 
-  for (const n of notifications) {
-    const text = `${n.title || ""} ${n.text || ""}`.toLowerCase();
-    if (text.includes("mentioned") || text.includes("@")) {
-      stats.by_type.mention++;
-    } else if (
-      text.includes("assigned") ||
-      text.includes("assignment")
-    ) {
-      stats.by_type.assignment++;
-    } else if (
-      text.includes("status") ||
-      text.includes("changed") ||
-      text.includes("moved")
-    ) {
-      stats.by_type.status_change++;
-    } else if (
-      text.includes("replied") ||
-      text.includes("reply")
-    ) {
-      stats.by_type.reply++;
+  for (const u of updates) {
+    if (u.replies && u.replies.length > 0) {
+      stats.by_type.with_replies++;
+    }
+    if (Number(u.creator_id) < 0) {
+      stats.by_type.by_system++;
     } else {
-      stats.by_type.other++;
+      stats.by_type.by_users++;
     }
   }
 

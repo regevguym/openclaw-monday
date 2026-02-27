@@ -20,9 +20,11 @@ describe("Tool Registration", () => {
           return undefined;
         },
       },
+      pluginConfig: { apiToken: "test-token-123", enableMcp: true },
       registerTool: (tool: any) => {
         registeredTools.set(tool.name, tool);
       },
+      registerCommand: (_cmd: any) => {},
     };
   });
 
@@ -76,6 +78,10 @@ describe("Tool Registration", () => {
     "monday_add_file_to_column",
     // Account (1)
     "monday_get_account_info",
+    // Notifications (3)
+    "monday_get_notifications",
+    "monday_get_notification_stats",
+    "monday_configure_notifications",
   ];
 
   it("should register all expected tools", () => {
@@ -84,9 +90,12 @@ describe("Tool Registration", () => {
     assert.equal(registeredTools.size, expectedCount, `Expected ${expectedCount} tools, got ${registeredTools.size}`);
   });
 
-  it("should throw if no API token provided", () => {
-    mockApi.config.get = () => undefined;
-    assert.throws(() => register(mockApi), /API token is required/);
+  it("should gracefully load without API token", () => {
+    mockApi.pluginConfig = {};
+    // Should not throw — plugin degrades gracefully with TOKEN_SETUP_MSG
+    register(mockApi);
+    // Tools are still registered, they just return a setup message when called
+    assert.ok(registeredTools.size > 0, "Tools should still be registered");
   });
 
   it("should register each expected tool by name", () => {

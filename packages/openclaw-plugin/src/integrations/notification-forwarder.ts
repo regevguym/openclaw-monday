@@ -1,7 +1,10 @@
 /**
  * Notification Forwarder Integration
- * Polls monday.com notifications and enriches them with full context
- * for the OpenClaw AI agent to process.
+ * Polls monday.com updates and surfaces relevant ones (mentions, replies, etc.)
+ * with full context for the OpenClaw AI agent to process.
+ *
+ * Uses the `updates` top-level query since the monday.com API v2024-10
+ * does not expose a `notifications` field.
  */
 
 import { MondayClient } from "../monday-client.js";
@@ -35,6 +38,11 @@ interface NotificationState {
   lastPollTime: string;
 }
 
+interface CurrentUser {
+  id: string;
+  name: string;
+}
+
 const MAX_SEEN_IDS = 500;
 
 export class NotificationForwarder {
@@ -43,6 +51,7 @@ export class NotificationForwarder {
   private pollInterval?: ReturnType<typeof setInterval>;
   private statePath: string;
   private accountSlug?: string;
+  private currentUser?: CurrentUser;
 
   /** Callback invoked for each new enriched notification */
   onNotification?: (notification: EnrichedNotification) => void;
@@ -63,7 +72,7 @@ export class NotificationForwarder {
    */
   async startPolling(intervalMs = 60000): Promise<void> {
     await this.loadState();
-    await this.resolveAccountSlug();
+    await this.resolveCurrentUser();
 
     // Run an initial poll immediately
     await this.pollNotifications();
@@ -107,42 +116,28 @@ export class NotificationForwarder {
   }
 
   /**
-   * Run a single poll cycle: fetch notifications, filter new ones, enrich, and surface.
+   * Run a single poll cycle: fetch updates, filter for relevant + unseen, and surface.
    */
   async pollNotifications(): Promise<EnrichedNotification[]> {
-    const raw = await this.fetchNotifications();
-    const newNotifications = raw.filter((n) => !this.seenIds.has(n.id));
+    const raw = await this.fetchUpdates();
 
-    if (newNotifications.length === 0) return [];
+    // Filter: only unseen updates that are relevant to the current user
+    const relevant = raw.filter((u) => {
+      if (this.seenIds.has(u.id)) return false;
+      return this.isRelevantToUser(u);
+    });
+
+    if (relevant.length === 0) return [];
 
     const enriched: EnrichedNotification[] = [];
 
-    for (const notification of newNotifications) {
-      this.markSeen(notification.id);
-      try {
-        const enrichedNotification =
-          await this.enrichNotification(notification);
-        enriched.push(enrichedNotification);
+    for (const update of relevant) {
+      this.markSeen(update.id);
+      const notification = this.mapUpdateToNotification(update);
+      enriched.push(notification);
 
-        if (this.onNotification) {
-          this.onNotification(enrichedNotification);
-        }
-      } catch (error) {
-        console.error(
-          `[monday-notifications] Failed to enrich notification ${notification.id}:`,
-          error
-        );
-        // Still surface the notification without enrichment
-        const basic: EnrichedNotification = {
-          id: notification.id,
-          title: notification.title || "",
-          text: notification.text || "",
-          created_at: notification.created_at || "",
-        };
-        enriched.push(basic);
-        if (this.onNotification) {
-          this.onNotification(basic);
-        }
+      if (this.onNotification) {
+        this.onNotification(notification);
       }
     }
 
@@ -151,139 +146,143 @@ export class NotificationForwarder {
   }
 
   /**
-   * Fetch recent notifications from monday.com API.
+   * Fetch recent updates from monday.com with item context included.
    */
-  private async fetchNotifications(limit = 25): Promise<any[]> {
+  private async fetchUpdates(limit = 25): Promise<any[]> {
     const data = await this.client.queryWithRetry(
       `query {
-        me {
-          notifications(limit: ${limit}) {
+        updates(limit: ${limit}) {
+          id
+          text_body
+          body
+          created_at
+          creator_id
+          creator { id name }
+          item_id
+          item {
             id
-            title
-            text
+            name
+            board { id name }
+            column_values {
+              id
+              type
+              text
+            }
+          }
+          replies {
+            id
+            text_body
+            creator_id
+            creator { id name }
             created_at
-            updated_at
           }
         }
       }`
     );
 
-    return data?.me?.notifications || [];
+    return data?.updates || [];
   }
 
   /**
-   * Enrich a raw notification with full item/board context.
+   * Determine if an update is relevant to the current user.
+   * Relevant means: mentions the user by name, is a reply to the user's update,
+   * or is by someone else on an item the user is involved with.
    */
-  private async enrichNotification(
-    notification: any
-  ): Promise<EnrichedNotification> {
-    const enriched: EnrichedNotification = {
-      id: notification.id,
-      title: notification.title || "",
-      text: notification.text || "",
-      created_at: notification.created_at || "",
+  private isRelevantToUser(update: any): boolean {
+    if (!this.currentUser) return true; // Can't filter without user info
+
+    const userId = this.currentUser.id;
+    const userName = this.currentUser.name;
+
+    // Skip updates created by the current user (they already know)
+    if (String(update.creator_id) === String(userId)) return false;
+
+    // Check if the update text mentions the user by name
+    const text = (update.text_body || update.body || "").toLowerCase();
+    if (userName && text.includes(userName.toLowerCase())) return true;
+
+    // Check if any reply on this update is by the current user
+    // (meaning someone posted on a thread the user participated in)
+    const replies = update.replies || [];
+    const userReplied = replies.some(
+      (r: any) => String(r.creator_id) === String(userId)
+    );
+    if (userReplied) return true;
+
+    // Default: include all updates by others (the agent can further filter)
+    return true;
+  }
+
+  /**
+   * Map a raw update (with embedded item context) to an EnrichedNotification.
+   */
+  private mapUpdateToNotification(update: any): EnrichedNotification {
+    const item = update.item;
+    const creatorName = update.creator?.name || "Someone";
+    const textBody = update.text_body || this.stripHtml(update.body || "");
+
+    // Build a human-readable title
+    const itemName = item?.name || "an item";
+    const boardName = item?.board?.name || "";
+    const title = boardName
+      ? `${creatorName} posted on "${itemName}" (${boardName})`
+      : `${creatorName} posted on "${itemName}"`;
+
+    const notification: EnrichedNotification = {
+      id: update.id,
+      title,
+      text: textBody,
+      created_at: update.created_at || "",
+      triggeredBy: creatorName,
     };
 
-    // Try to extract an item ID from the notification text/title
-    const itemId = this.extractItemId(notification);
-    if (!itemId) return enriched;
+    if (item) {
+      notification.relatedItem = {
+        id: Number(item.id),
+        name: item.name || "",
+        board_name: item.board?.name || "",
+        board_id: Number(item.board?.id || 0),
+        column_values: item.column_values || [],
+        recent_updates: (update.replies || []).map((r: any) => ({
+          id: r.id,
+          body: r.text_body || "",
+          created_at: r.created_at,
+          creator: r.creator,
+        })),
+      };
 
-    try {
-      const data = await this.client.queryWithRetry(
-        `query ($ids: [ID!]!) {
-          items(ids: $ids) {
-            id
-            name
-            board {
-              id
-              name
-            }
-            column_values {
-              id
-              title
-              text
-              value
-            }
-            updates(limit: 5) {
-              id
-              body
-              created_at
-              creator {
-                id
-                name
-              }
-            }
-          }
-        }`,
-        { ids: [String(itemId)] }
-      );
-
-      const item = data?.items?.[0];
-      if (item) {
-        enriched.relatedItem = {
-          id: Number(item.id),
-          name: item.name,
-          board_name: item.board?.name || "",
-          board_id: Number(item.board?.id || 0),
-          column_values: item.column_values || [],
-          recent_updates: item.updates || [],
-        };
-
-        // Build URLs
-        if (this.accountSlug && item.board?.id) {
-          enriched.boardUrl = `https://${this.accountSlug}.monday.com/boards/${item.board.id}`;
-          enriched.itemUrl = `${enriched.boardUrl}/pulses/${item.id}`;
-        }
-
-        // Extract who triggered the notification from the most recent update
-        const latestUpdate = item.updates?.[0];
-        if (latestUpdate?.creator?.name) {
-          enriched.triggeredBy = latestUpdate.creator.name;
-        }
+      // Build URLs
+      if (this.accountSlug && item.board?.id) {
+        notification.boardUrl = `https://${this.accountSlug}.monday.com/boards/${item.board.id}`;
+        notification.itemUrl = `${notification.boardUrl}/pulses/${item.id}`;
       }
-    } catch (error) {
-      console.error(
-        `[monday-notifications] Failed to fetch item ${itemId}:`,
-        error
-      );
     }
 
-    return enriched;
+    return notification;
   }
 
   /**
-   * Try to extract an item/pulse ID from notification content.
-   * monday.com notification text often contains item references.
+   * Resolve the current user ID/name and account slug.
    */
-  private extractItemId(notification: any): string | null {
-    const text = `${notification.title || ""} ${notification.text || ""}`;
-
-    // Match patterns like "pulse-123456" or "item_id=123456"
-    const pulseMatch = text.match(/pulse[_-]?(\d+)/i);
-    if (pulseMatch) return pulseMatch[1];
-
-    const itemIdMatch = text.match(/item[_-]?id[=:]?\s*(\d+)/i);
-    if (itemIdMatch) return itemIdMatch[1];
-
-    // Match patterns in URLs: /pulses/123456
-    const urlMatch = text.match(/\/pulses\/(\d+)/);
-    if (urlMatch) return urlMatch[1];
-
-    return null;
-  }
-
-  /**
-   * Resolve the account slug for building URLs.
-   */
-  private async resolveAccountSlug(): Promise<void> {
+  private async resolveCurrentUser(): Promise<void> {
     try {
       const data = await this.client.queryWithRetry(
-        `query { me { account { slug } } }`
+        `query { me { id name account { slug } } }`
       );
-      this.accountSlug = data?.me?.account?.slug;
+      if (data?.me) {
+        this.currentUser = { id: data.me.id, name: data.me.name };
+        this.accountSlug = data.me.account?.slug;
+      }
     } catch {
-      // Non-critical, URLs just won't be generated
+      // Non-critical — filtering just won't exclude own updates
     }
+  }
+
+  /**
+   * Strip HTML tags from text.
+   */
+  private stripHtml(html: string): string {
+    return html.replace(/<[^>]*>/g, "").trim();
   }
 
   /**
@@ -292,7 +291,6 @@ export class NotificationForwarder {
   private markSeen(id: string): void {
     this.seenIds.add(id);
 
-    // Cap the set size to prevent unbounded growth
     if (this.seenIds.size > MAX_SEEN_IDS) {
       const entries = Array.from(this.seenIds);
       const toRemove = entries.slice(0, entries.length - MAX_SEEN_IDS);
